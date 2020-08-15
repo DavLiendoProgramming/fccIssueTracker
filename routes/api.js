@@ -9,14 +9,11 @@
 require('dotenv').config();
 const expect = require('chai').expect;
 const express = require('express');
-//MongoDB imports
-const MongoClient = require('mongodb').MongoClient;
-const ObjectId = require('mongodb').ObjectID;
 
 //Controllers
 const issuesController = require('../controllers/issuesController');
 
-const CONNECTION_STRING = process.env.DB;
+//Routes
 module.exports = function (app) {
   app.get('/api/issues/:project', issuesController.getIssues);
 

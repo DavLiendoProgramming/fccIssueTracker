@@ -25,27 +25,21 @@ exports.createIssue = (req, res) => {
 
 //Get all issues
 exports.getIssues = (req, res) => {
-  try {
-    mongo(async function (db) {
-      let issues = await db.find({});
-      res.send(issues);
-      console.log('success!');
-    });
-  } catch (e) {
-    res.send({ error: e.message });
-  }
+  mongo(async function (db) {
+    try {
+      let issues = await db.find({}).toArray();
+      return res.send(issues);
+    } catch (e) {
+      return res.send({ error: e.message });
+    }
+  });
 };
 
 //Update an issue
 exports.updateIssue = (req, res) => {
-  try {
-    mongo(async function (db) {
-      console.log(req.body._id, 'body');
-      let issue = await db.findOne({ _id: ObjectID(req.body._id) });
-      console.log(issue, 'idduse');
-      if (!issue) {
-        return res.status(404).send();
-      }
+  mongo(async function (db) {
+    try {
+      let issue = {};
       if (req.body.issue_title !== '') {
         issue.issue_title = req.body.issue_title;
       }
@@ -62,28 +56,33 @@ exports.updateIssue = (req, res) => {
         issue.open = req.body.open;
       }
       issue.updated_on = new Date();
-      issue.open = req.body.open;
-      console.log('success!', issue);
-      issue.save();
-      return res.send(issue);
-    });
-  } catch (e) {
-    return res.send({ error: e.message });
-  }
+      console.log(req.body._id);
+      const result = await db.updateOne(
+        { _id: ObjectID(req.body._id) },
+        { $set: issue },
+        { upsert: false }
+      );
+      console.log(result);
+      console.log('success!');
+      return res.send('Successfully updated ' + req.body._id);
+    } catch (e) {
+      return res.send({ error: e.message });
+    }
+  });
 };
 
 //Delete issue
 exports.deleteIssue = (req, res) => {
   try {
     mongo(async function (db) {
-      let issue = await db.remove({ _id: ObjectID(req.body._id) });
+      let issue = await db.findOneAndDelete({ _id: ObjectID(req.body._id) });
       if (!issue) {
-        res.status(404).send();
+        return res.status(404).send();
       }
-      res.send(issue);
       console.log('success!');
+      return res.send(issue);
     });
   } catch (e) {
-    res.send({ error: e.message });
+    return res.send({ error: e.message });
   }
 };
