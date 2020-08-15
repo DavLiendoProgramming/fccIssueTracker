@@ -73,16 +73,21 @@ exports.updateIssue = (req, res) => {
 
 //Delete issue
 exports.deleteIssue = (req, res) => {
+  //ID string verify
+  const reg = /^(.{12}|[0-9a-fA-f]{24})$/;
+  if (!reg.test(req.body._id)) {
+    return res.send('_id error');
+  }
   try {
     mongo(async function (db) {
-      let issue = await db.findOneAndDelete({ _id: ObjectID(req.body._id) });
+      let issue = await db.deleteOne({ _id: ObjectID(req.body._id) });
       if (!issue) {
         return res.status(404).send();
       }
       console.log('success!');
-      return res.send(issue);
+      return res.send('deleted ' + req.body._id);
     });
   } catch (e) {
-    return res.send({ error: e.message });
+    return res.send('could not delete ' + req.body._id);
   }
 };
